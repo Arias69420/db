@@ -1,0 +1,343 @@
+											DCL COMMANDS
+
+GRANT 
+
+Database changed
+mysql> show tables;
++----------------+
+| Tables_in_pms  |
++----------------+
+| admin          |
+| bill           |
+| customer       |
+| delivery_agent |
+| dell           |
+| employee       |
+| medicine       |
+| order_1        |
+| prescription   |
+| product        |
++----------------+
+10 rows in set (0.03 sec)
+
+mysql> create user test@localhost identified by '1234';
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> show grants for test@localhost;
++------------------------------------------+
+| Grants for test@localhost                |
++------------------------------------------+
+| GRANT USAGE ON *.* TO `test`@`localhost` |
++------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> select user, host from mysql.user;
++------------------+-----------+
+| user             | host      |
++------------------+-----------+
+| Dell             | localhost |
+| mysql.infoschema | localhost |
+| mysql.session    | localhost |
+| mysql.sys        | localhost |
+| root             | localhost |
+| test             | localhost |
++------------------+-----------+
+6 rows in set (0.00 sec)
+
+mysql>  grant alter , insert on delivery_agent to test@localhost;
+Query OK, 0 rows affected (0.02 sec)
+
+LOGGING IN WITH NEW CREATED USER
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| performance_schema |
+| pms                |
++--------------------+
+3 rows in set (0.01 sec)
+
+mysql> use pms;
+Database changed
+
+TESTING ALTER 
+
+mysql> ALTER TABLE Delivery_agent
+    -> ADD COLUMN Email VARCHAR(100);
+Query OK, 0 rows affected (0.15 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> DESC delivery_agent;
++----------+--------------+------+-----+---------+-------+
+| Field    | Type         | Null | Key | Default | Extra |
++----------+--------------+------+-----+---------+-------+
+| Name     | varchar(30)  | NO   |     | NULL    |       |
+| Agent_id | int          | NO   | PRI | NULL    |       |
+| Phone_no | char(10)     | NO   | UNI | NULL    |       |
+| Email    | varchar(100) | YES  |     | NULL    |       |
++----------+--------------+------+-----+---------+-------+
+4 rows in set (0.03 sec)
+
+TESTING INSERT
+
+
+mysql> INSERT INTO Delivery_agent (Name, Agent_id, Phone_no)
+    -> VALUES ('New Agent', 5, 9876543210);
+Query OK, 1 row affected (0.02 sec)
+
+mysql> select * from Delivery_agent;
++-----------+----------+------------+-------+
+| Name      | Agent_id | Phone_no   | Email |
++-----------+----------+------------+-------+
+| Rohit     |        1 | 1212121212 | NULL  |
+| Ishan     |        2 | 2323232323 | NULL  |
+| Virat     |        3 | 4545454545 | NULL  |
+| Shaman    |        4 | 8989898989 | NULL  |
+| New Agent |        5 | 9876543210 | NULL  |
++-----------+----------+------------+-------+
+5 rows in set (0.01 sec)
+
+REVOKE 
+
+mysql> REVOKE INSERT, ALTER ON PMS.delivery_agent FROM 'test'@'localhost';
+Query OK, 0 rows affected (0.01 sec)
+
+LOGGING IN WITH TEST USER AND CHECKING GRANTS
+
+USING SELECT (NOT REVOKED)
+
+mysql> SELECT * FROM PMS.delivery_agent;
++-----------+----------+------------+-------+
+| Name      | Agent_id | Phone_no   | Email |
++-----------+----------+------------+-------+
+| Rohit     |        1 | 1212121212 | NULL  |
+| Ishan     |        2 | 2323232323 | NULL  |
+| Virat     |        3 | 4545454545 | NULL  |
+| Shaman    |        4 | 8989898989 | NULL  |
+| New Agent |        5 | 9876543210 | NULL  |
++-----------+----------+------------+-------+
+5 rows in set (0.00 sec)
+
+USING ALTER, INSERT (REVOKED)
+
+mysql> ALTER TABLE PMS.delivery_agent
+    -> ADD COLUMN Email VARCHAR(100);
+ERROR 1142 (42000): ALTER command denied to user 'test'@'localhost' for table 'delivery_agent'
+
+mysql> INSERT INTO PMS.delivery_agent (Name, Agent_id, Phone_no)
+    -> VALUES ('John', 5, '1234567890');
+ERROR 1142 (42000): INSERT command denied to user 'test'@'localhost' for table 'delivery_agent'
+
+											
+											TCL COMMANDS
+
+
+COMMIT COMMAND
+
+mysql>  SELECT * FROM Bill;
++---------+--------------+----------------+----------+
+| Bill_id | Total_amount | Employee_phone | Order_id |
++---------+--------------+----------------+----------+
+|  123451 |          300 |      999999999 |        1 |
+|  123452 |          500 |      999999999 |        2 |
+|  123453 |          700 |      999999999 |        3 |
+|  123454 |          989 |      999999999 |        4 |
+|  123455 |         1000 |      999999999 |        5 |
++---------+--------------+----------------+----------+
+5 rows in set (0.04 sec)
+
+mysql> SHOW VARIABLES WHERE variable_name = 'autocommit';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| autocommit    | ON    |
++---------------+-------+
+1 row in set (0.04 sec)
+
+mysql> start transaction;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> set autocommit = 0;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SHOW VARIABLES WHERE variable_name = 'autocommit';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| autocommit    | OFF   |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql> use pms;
+Database changed
+mysql> COMMIT;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from Bill;
++---------+--------------+----------------+----------+
+| Bill_id | Total_amount | Employee_phone | Order_id |
++---------+--------------+----------------+----------+
+|  123451 |          300 | 999999999      |        1 |
+|  123452 |          500 | 999999999      |        2 |
+|  123453 |          700 | 999999999      |        3 |
+|  123454 |          989 | 999999999      |        4 |
+|  123455 |         1000 | 999999999      |        5 |
++---------+--------------+----------------+----------+
+5 rows in set (0.01 sec)
+
+
+ROLLBACK COMMAND
+
+mysql> SELECT * FROM Order_1;
++----------------+-------------------+--------------+----------+-------------+
+| Date_of_Expiry | Manufacturer_name | Med_quantity | Order_id | Customer_id |
++----------------+-------------------+--------------+----------+-------------+
+| 2024-05-10     | PharmaTech        |          100 |        1 |        1234 |
+| 2025-08-15     | Medicor           |          200 |        2 |        1235 |
+| 2023-12-31     | BioGen            |          150 |        3 |        1236 |
+| 2026-03-20     | HealWell          |          300 |        4 |        1237 |
+| 2027-08-08     | Medifarma         |          200 |        5 |        1238 |
++----------------+-------------------+--------------+----------+-------------+
+5 rows in set (0.01 sec)
+
+mysql> SHOW VARIABLES WHERE variable_name = 'autocommit';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| autocommit    | ON    |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql> start TRANSACTIon;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> set autocommit =0;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> INSERT INTO Order_1 (Date_of_Expiry, Manufacturer_name, Med_quantity, Order_id, Customer_id)
+    -> VALUES ('2028-01-01', 'NewManufacturer', 250, 6, 1239);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from Order_1
+    -> ;
++----------------+-------------------+--------------+----------+-------------+
+| Date_of_Expiry | Manufacturer_name | Med_quantity | Order_id | Customer_id |
++----------------+-------------------+--------------+----------+-------------+
+| 2024-05-10     | PharmaTech        |          100 |        1 |        1234 |
+| 2025-08-15     | Medicor           |          200 |        2 |        1235 |
+| 2023-12-31     | BioGen            |          150 |        3 |        1236 |
+| 2026-03-20     | HealWell          |          300 |        4 |        1237 |
+| 2027-08-08     | Medifarma         |          200 |        5 |        1238 |
+| 2028-01-01     | NewManufacturer   |          250 |        6 |        1239 |
++----------------+-------------------+--------------+----------+-------------+
+6 rows in set (0.00 sec)
+
+mysql> ROLLBACK;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from Order_1;
++----------------+-------------------+--------------+----------+-------------+
+| Date_of_Expiry | Manufacturer_name | Med_quantity | Order_id | Customer_id |
++----------------+-------------------+--------------+----------+-------------+
+| 2024-05-10     | PharmaTech        |          100 |        1 |        1234 |
+| 2025-08-15     | Medicor           |          200 |        2 |        1235 |
+| 2023-12-31     | BioGen            |          150 |        3 |        1236 |
+| 2026-03-20     | HealWell          |          300 |        4 |        1237 |
+| 2027-08-08     | Medifarma         |          200 |        5 |        1238 |
++----------------+-------------------+--------------+----------+-------------+
+5 rows in set (0.00 sec)
+
+SAVEPOINT COMMAND
+
+mysql> use pms;
+Database changed
+mysql> select * from Bill;
++---------+--------------+----------------+----------+
+| Bill_id | Total_amount | Employee_phone | Order_id |
++---------+--------------+----------------+----------+
+|  123451 |          300 | 999999999      |        1 |
+|  123452 |          500 | 999999999      |        2 |
+|  123453 |          700 | 999999999      |        3 |
+|  123454 |          989 | 999999999      |        4 |
+|  123455 |         1000 | 999999999      |        5 |
++---------+--------------+----------------+----------+
+5 rows in set (0.01 sec)
+
+mysql> INSERT INTO PMS.Bill (Bill_id, Total_amount, Employee_phone, Order_id)
+    -> VALUES (122, 1200, '8888888888', 1);
+Query OK, 1 row affected (0.02 sec)
+
+mysql> SAVEPOINT INSERTION;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> DELETE FROM Bill where Bill_id = '123451';
+Query OK, 1 row affected (0.07 sec)
+
+mysql> SELECT * From Bill;
++---------+--------------+----------------+----------+
+| Bill_id | Total_amount | Employee_phone | Order_id |
++---------+--------------+----------------+----------+
+|  123452 |          500 | 999999999      |        2 |
+|  123453 |          700 | 999999999      |        3 |
+|  123454 |          989 | 999999999      |        4 |
+|  123455 |         1000 | 999999999      |        5 |
++---------+--------------+----------------+----------+
+4 rows in set (0.00 sec)
+
+mysql> ROLLBACK TO INSERTION;
+Query OK, 0 rows affected (0.11 sec)
+
+mysql> select * from Bill;
++---------+--------------+----------------+----------+
+| Bill_id | Total_amount | Employee_phone | Order_id |
++---------+--------------+----------------+----------+
+|  123451 |          300 | 999999999      |        1 |
+|  123452 |          500 | 999999999      |        2 |
+|  123453 |          700 | 999999999      |        3 |
+|  123454 |          989 | 999999999      |        4 |
+|  123455 |         1000 | 999999999      |        5 |
++---------+--------------+----------------+----------+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
