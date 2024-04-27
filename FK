@@ -1,0 +1,49 @@
+#include <stdio.h>
+
+void main() {
+    int capacity, no_items, cur_weight = 0, item;
+    int used[10];
+    float total_profit = 0.0;
+    int i;
+    int weight[10];
+    int value[10];
+
+    printf("Enter the capacity of knapsack:\n");
+    scanf("%d", &capacity);
+
+    printf("Enter the number of items:\n");
+    scanf("%d", &no_items);
+
+    printf("Enter the Weight and Value of the item:\n");
+    for (i = 0; i < no_items; i++) {
+        printf("Weight[%d]:\t", i + 1);
+        scanf("%d", &weight[i]);
+        printf("Value[%d]:\t", i + 1);
+        scanf("%d", &value[i]);
+    }
+
+    for (i = 0; i < no_items; ++i)
+        used[i] = 0;
+
+    while (cur_weight < capacity) {
+        item = -1;
+        for (i = 0; i < no_items; ++i) {
+            if (!used[i] && (item == -1 || ((float)value[i] / weight[i] > (float)value[item] / weight[item])))
+                item = i;
+        }
+
+        if (cur_weight + weight[item] <= capacity) {
+            used[item] = 1;
+            cur_weight += weight[item];
+            total_profit += value[item];
+            printf("Added object id (%d %d) completely in the bag. Space left: %d\n", item, value[item], weight[item], capacity - cur_weight);
+        } else {
+            int item_percent = (int)(((float)cur_weight / weight[item]) * 100);
+            total_profit += ((float)cur_weight / weight[item]) * value[item];
+            printf("Added %d%% (%d, %d) of object %d in the bag.\n", item_percent, value[item], weight[item], item + 1);
+            cur_weight = capacity;  // Stop the loop
+        }
+    }
+
+    printf("Filled the bag with objects worth %.2f\n", total_profit);
+}
